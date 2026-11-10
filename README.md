@@ -34,7 +34,7 @@ V1 is the first public milestone: a functional end-to-end implementation, valida
 
 ---
 
-## What is NVIDIA AI Video Studio?
+## What is AI Upscaler Studio - Powered by NVIDIA ?
 
 NVIDIA AI Video Studio is a local desktop application designed to combine AI-based video frame interpolation and super-resolution in one configurable workflow.
 
