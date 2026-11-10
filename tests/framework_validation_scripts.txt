@@ -1,13 +1,29 @@
 py -0p -- to check the current python version running in your system
+
 py -3.11 -m venv .venv -- creates a virtual environment
-.\.venv\Scripts\Activate.ps1 -- to Activate that venv
+
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -- to bypass windows powershell security 
+
+.\.venv\Scripts\Activate.ps1 -- to Activate that venv
+
 python -m pip install --upgrade pip -- to upgrade the pip
+
 pip install -e ".[dev,nvidia]" -- Installs modules required for this project
 
+python -m pip install torch==2.14.1 torchvision==0.29.1 --index-url https://download.pytorch.org/whl/cu126
+
 winget install "FFmpeg (Shared)" -- main character of video upscaler
+
 ffmpeg -version -- to check that particular version
+
 ffprobe -version  -- to check that particular version
+
 ffmpeg -hide_banner -encoders | findstr /i nvenc -- Checks nvidia encoding support
+
+python -c "import torch,sys; print('Python:',sys.version); print('Torch:',torch.__version__); print('Torch location:',torch.__file__); print('CUDA built:',torch.backends.cuda.is_built()); print('CUDA runtime:',torch.version.cuda); print('CUDA available:',torch.cuda.is_available()); print('GPU count:',torch.cuda.device_count())"
+
+python -c "import torch; x=torch.rand(2048,2048,device='cuda'); y=x@x; torch.cuda.synchronize(); print('GPU computation successful:',y.mean().item()); print('Device:',torch.cuda.get_device_name(0))"
+
 python -c "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CUDA unavailable')" -- CUDA Runtime Checks
 
+nvidia-smi -l 1 -- to view GPU usage in terminal

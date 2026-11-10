@@ -4,9 +4,22 @@ from pathlib import Path
 
 from PySide6.QtCore import QThread, QTimer
 from PySide6.QtWidgets import (
-    QComboBox, QDoubleSpinBox, QFileDialog, QFrame, QGridLayout, QHBoxLayout,
-    QLabel, QLineEdit, QListWidget, QMainWindow, QMessageBox, QPushButton,
-    QProgressBar, QStackedWidget, QVBoxLayout, QWidget,
+    QComboBox,
+    QDoubleSpinBox,
+    QFileDialog,
+    QFrame,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QMainWindow,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
 )
 
 from app.core.config import ProcessingConfig, validate_config
@@ -235,7 +248,7 @@ class MainWindow(QMainWindow):
                 f"{video.get('height', '?')} · {video.get('r_frame_rate', '?')} FPS · "
                 f"{self.media_duration:.2f} seconds"
             )
-        except Exception as exc:
+        except (OSError, RuntimeError, ValueError) as exc:
             self.media_info.setText(f"Media probe failed: {exc}")
 
     def _choose_output(self) -> None:

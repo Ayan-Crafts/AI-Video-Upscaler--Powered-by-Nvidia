@@ -41,7 +41,7 @@ def build_compatibility_report(gpu_index: int = 0) -> CompatibilityReport:
                 warnings.append("NVIDIA GPU is visible, but PyTorch cannot access CUDA.")
         except ImportError:
             warnings.append("PyTorch is not installed; CUDA inference self-test was not run.")
-        except Exception as exc:
+        except (OSError, RuntimeError) as exc:
             warnings.append(f"CUDA capability check failed: {exc}")
     ffmpeg = discover_ffmpeg()
     if not ffmpeg.available:

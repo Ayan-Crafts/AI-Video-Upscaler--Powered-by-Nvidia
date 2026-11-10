@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
 from uuid import uuid4
@@ -25,7 +25,7 @@ class Job:
     progress: float = 0.0
     stage: str = "Queued"
     error: str | None = None
-    created_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     def set_progress(self, value: float, stage: str) -> None:
         if not 0.0 <= value <= 100.0:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import importlib.util
+from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
@@ -20,7 +20,7 @@ def torch_cuda_status() -> EngineAvailability:
             return EngineAvailability("PyTorch CUDA", False, "PyTorch cannot access a CUDA device.")
         return EngineAvailability("PyTorch CUDA", True,
                                   f"{torch.cuda.get_device_name(0)} · runtime {torch.version.cuda}")
-    except Exception as exc:
+    except (ImportError, OSError, RuntimeError) as exc:
         return EngineAvailability("PyTorch CUDA", False, f"CUDA initialization failed: {exc}")
 
 

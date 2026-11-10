@@ -4,7 +4,9 @@ import shutil
 import subprocess
 from dataclasses import asdict, dataclass
 from typing import Any
+import logging
 
+logger = logging.getLogger(__name__)
 
 @dataclass(slots=True)
 class GPUInfo:
