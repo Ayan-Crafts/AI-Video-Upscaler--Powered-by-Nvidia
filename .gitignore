@@ -16,3 +16,4 @@ models/
 output/
 *.log
 .mp4
+v1_Screenshots/*.mp4
