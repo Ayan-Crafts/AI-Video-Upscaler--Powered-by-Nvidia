@@ -1,4 +1,5 @@
-# NVIDIA AI Video Studio
+# AI Upscaler Studio
+Powered by NVIDIA
 
 ### V1.0.0 — Imaginoromancophilia
 
