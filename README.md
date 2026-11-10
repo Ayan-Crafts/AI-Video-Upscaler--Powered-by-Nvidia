@@ -110,27 +110,49 @@ The important result of V1 is not simply that a video became larger or smoother.
 
 ---
 
-## V1 demonstration
+## V1 Demonstration — Original vs AI Enhanced
 
-The following two videos use the same gameplay recording as the basis for an original-versus-enhanced comparison.
+The following comparison uses the same gameplay recording to demonstrate the changes produced by NVIDIA AI Video Studio V1.
 
-### AI-upscaled and interpolated output
+| **Original Gameplay Recording** | **AI Upscaled + Interpolated Output** |
+|:---:|:---:|
+| [![Original gameplay video](https://img.youtube.com/vi/t4xxRYU7Q90/hqdefault.jpg)](https://www.youtube.com/watch?v=t4xxRYU7Q90) | [![AI enhanced gameplay video](https://img.youtube.com/vi/4B6UuXTA_NI/hqdefault.jpg)](https://www.youtube.com/watch?v=4B6UuXTA_NI) |
+| [▶ Watch Original on YouTube](https://www.youtube.com/watch?v=t4xxRYU7Q90) | [▶ Watch Enhanced on YouTube](https://www.youtube.com/watch?v=4B6UuXTA_NI) |
+| **1920 × 1080** | **2560 × 1440** |
+| **Variable frame rate** | **60 FPS** |
+| Average: ~29.29 FPS | Target: 60 FPS |
+| Duration: ~58.20 seconds | Duration: ~58 seconds |
+| Stereo audio · 48 kHz | Stereo audio · 48 kHz |
+| Original gameplay capture | RIFE + Real-ESRGAN |
 
-[![Watch the enhanced video](https://img.youtube.com/vi/4B6UuXTA_NI/hqdefault.jpg)](https://www.youtube.com/watch?v=4B6UuXTA_NI)
+### Technical comparison
 
-**Output:** 2560 × 1440, 60 FPS
+| Parameter | Original recording | Enhanced output |
+|:---|:---|:---|
+| Resolution | 1920 × 1080 | 2560 × 1440 |
+| Width | 1920 pixels | 2560 pixels |
+| Height | 1080 pixels | 1440 pixels |
+| Frame rate | VFR (average ~29.29 FPS, nominal 59.94 FPS) | 60 FPS |
+| Duration | ~58.20 seconds | ~58 seconds |
+| Audio codec | AAC | AAC |
+| Audio channels | 2 (Stereo) | 2 (Stereo) |
+| Audio sample rate | 48,000 Hz | 48,000 Hz |
+| AI interpolation | Not applied | RIFE v4.25 |
+| AI upscaling | Not applied | Real-ESRGAN x2plus |
 
-[Watch the enhanced video on YouTube](https://www.youtube.com/watch?v=4B6UuXTA_NI)
+### What changed?
 
-### Original gameplay recording
+- **Resolution:** 1920 × 1080 → 2560 × 1440 (1440p).
+- **Frame rate:** Approximately 30 FPS processing input → 60 FPS output.
+- **Spatial detail:** AI-based super-resolution using Real-ESRGAN.
+- **Temporal smoothness:** Intermediate frames generated using RIFE.
+- **Audio:** Stereo audio retained at a 48 kHz sample rate.
 
-[![Watch the original video](https://img.youtube.com/vi/t4xxRYU7Q90/hqdefault.jpg)](https://www.youtube.com/watch?v=t4xxRYU7Q90)
+**Important preprocessing note:** The original Microsoft Game DVR recording was variable frame rate. Since V1 requires constant-frame-rate input, FFmpeg was used to prepare a full-resolution 1920 × 1080, 30 FPS CFR intermediate before AI processing. The original recording was not downscaled during this conversion.
 
-**Original capture:** 1920 × 1080, variable frame rate
+The enhanced output was played back and visually reviewed. The result appeared smoother and visually improved, with no obvious ghosting noticed during the author's review of this particular clip. Results may vary depending on video content, motion and source quality.
 
-[Watch the original video on YouTube](https://www.youtube.com/watch?v=t4xxRYU7Q90)
-
-The videos are hosted on YouTube so that the large media files do not need to be stored in the Git repository.
+*Click either thumbnail to watch the corresponding video on YouTube.*
 
 ### Application screenshots
 
