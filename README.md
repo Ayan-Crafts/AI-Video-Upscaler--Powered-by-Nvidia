@@ -18,7 +18,7 @@ V1 is the first public milestone: a functional end-to-end implementation, valida
 
 ## Contents
 
-- [What is NVIDIA AI Video Studio?](#what-is-nvidia-ai-video-studio)
+- [What is AI Upscaler Studio - Powered by NVIDIA? ](#what-is-nvidia-ai-video-studio)
 - [Why build this when alternatives already exist?](#why-build-this-when-alternatives-already-exist)
 - [V1 demonstration](#v1-demonstration)
 - [What V1 actually does](#what-v1-actually-does)
