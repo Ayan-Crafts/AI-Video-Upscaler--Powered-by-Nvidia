@@ -154,9 +154,11 @@ def _detect_with_nvidia_smi() -> list[GPUInfo]:
         result = subprocess.run(
             [
                 executable,
-                "--query-gpu=index,name,driver_version,"
-                "memory.total,memory.free,"
-                "temperature.gpu,utilization.gpu",
+                (
+                    "--query-gpu=index,name,driver_version,"
+                    "memory.total,memory.free,"
+                    "temperature.gpu,utilization.gpu"
+                ),
                 "--format=csv,noheader,nounits",
             ],
             capture_output=True,

@@ -30,7 +30,7 @@ class TranscodeWorker(QObject):
             output = self.runner.run(self.config, self.duration_seconds,
                                      lambda pct, stage: self.progress.emit(pct, stage))
             self.succeeded.emit(str(output))
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             self.failed.emit(str(exc))
 
     @Slot()
