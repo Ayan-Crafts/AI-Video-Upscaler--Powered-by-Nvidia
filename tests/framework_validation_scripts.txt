@@ -4,6 +4,7 @@ py -3.11 -m venv .venv -- creates a virtual environment
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -- to bypass windows powershell security 
 python -m pip install --upgrade pip -- to upgrade the pip
 pip install -e ".[dev,nvidia]" -- Installs modules required for this project
+
 winget install "FFmpeg (Shared)" -- main character of video upscaler
 ffmpeg -version -- to check that particular version
 ffprobe -version  -- to check that particular version
