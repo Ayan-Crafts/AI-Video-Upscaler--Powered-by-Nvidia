@@ -167,9 +167,15 @@ class RIFEEngine:
             try:
                 with torch.inference_mode():
                     output = self.model.interpolate(input0, input1, timestep, scale_list)
-                # Preserve FP16 output when enabled so Real-ESRGAN can consume
-                # it directly without a full-frame FP32 allocation.
-                output = output[..., :original_h, :original_w].clamp_(0.0, 1.0)
+                    # Keep post-processing inside InferenceMode. PyTorch inference
+                    # tensors cannot be modified in-place after leaving that context.
+                    # Use out-of-place clamp so the returned tensor remains safe for
+                    # downstream CUDA consumers such as Real-ESRGAN.
+                    output = output[..., :original_h, :original_w].clamp(0.0, 1.0)
+                # A tensor created under inference_mode remains an inference tensor.
+                # Clone after leaving the context to return a normal tensor that can
+                # be consumed or modified by downstream stages such as Real-ESRGAN.
+                output = output.clone()
                 self.inference_scale = scale
                 return output
             except RuntimeError as exc:
