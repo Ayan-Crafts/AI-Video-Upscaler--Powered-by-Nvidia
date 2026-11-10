@@ -7,3 +7,6 @@ pip install -e ".[dev,nvidia]" -- Installs modules required for this project
 winget install "FFmpeg (Shared)" -- main character of video upscaler
 ffmpeg -version -- to check that particular version
 ffprobe -version  -- to check that particular version
+ffmpeg -hide_banner -encoders | findstr /i nvenc -- Checks nvidia encoding support
+python -c "import torch; print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'CUDA unavailable')" -- CUDA Runtime Checks
+
