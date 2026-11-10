@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nvidia-ai-video-studio"
-version = "0.1.0"
+version = "0.2.0.dev1"
 description = "NVIDIA-accelerated AI video interpolation and upscaling desktop studio"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
@@ -13,6 +13,10 @@ dependencies = ["PySide6>=6.7,<7", "psutil>=5.9"]
 
 [project.optional-dependencies]
 nvidia = ["nvidia-ml-py>=12.535"]
+ai = ["numpy>=1.26,<3"]
+# Do not install this extra into an NVIDIA environment unless the selected
+# PyTorch wheel index is configured explicitly. Prefer the CUDA wheel command
+# in docs/AI_PIPELINE.md to avoid replacing CUDA PyTorch with a CPU wheel.
 ml = ["torch>=2.4", "torchvision>=0.19"]
 dev = ["pytest>=8", "pytest-qt>=4.4", "ruff>=0.6", "coverage>=7"]
 

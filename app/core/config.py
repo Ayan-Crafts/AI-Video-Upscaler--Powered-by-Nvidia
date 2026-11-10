@@ -27,6 +27,10 @@ class ProcessingConfig:
     upscale: bool = True
     resample_audio: bool = True
     overwrite: bool = False
+    gpu_index: int = 0
+    fp16: bool = True
+    rife_scale: float | None = None
+    upscale_tile_size: int = 0
 
 
 def validate_config(config: ProcessingConfig) -> list[str]:
@@ -43,10 +47,18 @@ def validate_config(config: ProcessingConfig) -> list[str]:
         errors.append("Target FPS must be between 1 and 240.")
     if config.output_width <= 0 or config.output_height <= 0:
         errors.append("Output dimensions must be positive.")
+    elif config.output_width % 2 or config.output_height % 2:
+        errors.append("Output width and height must be even for the current yuv420p output path.")
     if config.output_width > 7680 or config.output_height > 4320:
         errors.append("Output dimensions exceed the supported 8K canvas (7680 × 4320).")
     if config.audio_sample_rate not in VALID_SAMPLE_RATES:
         errors.append("Audio sample rate must be 44100, 48000 or 96000 Hz.")
+    if config.gpu_index < 0:
+        errors.append("GPU index must be zero or greater.")
+    if config.rife_scale is not None and config.rife_scale not in {0.25, 0.5, 1.0}:
+        errors.append("RIFE inference scale must be 0.25, 0.5 or 1.0.")
+    if config.upscale_tile_size < 0 or (0 < config.upscale_tile_size < 32):
+        errors.append("Upscaling tile size must be 0 (automatic) or at least 32 pixels.")
     if not (config.interpolate or config.upscale or config.resample_audio):
         errors.append("At least one processing operation must be enabled.")
     try:

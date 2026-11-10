@@ -1,18 +1,19 @@
-# Validation record — 2026-11-10
+# AI pipeline overlay validation record
 
-## Checks executed in the current development container
+Validation performed in the current development container (Linux, Python 3.13, CPU-only PyTorch; no physical NVIDIA GPU or PySide6 GUI runtime).
 
-| Check | Result | Notes |
+| Check | Result | Scope |
 |---|---|---|
-| Python unit tests | PASS — 16 passed | `python -m pytest -q` |
-| FFmpeg media integration | PASS | Generates a synthetic H.264/AAC clip, converts to 640×480 at 30 FPS, resamples audio to 48 kHz, then verifies with FFprobe. |
-| Python bytecode compilation | PASS | `python -m compileall -q app tests` |
-| Ruff lint | NOT RUN | Ruff is not installed; package installation cannot reach PyPI from this environment. |
-| PySide6 GUI launch | NOT RUN | PySide6 is not installed in this container. |
-| CUDA/RIFE/Real-ESRGAN inference | NOT RUN | This environment has CPU-only PyTorch and no visible NVIDIA GPU. |
-| NVENC hardware export | NOT RUN | No physical NVIDIA GPU is attached to this environment. |
-| Windows installer | NOT RUN | Build host is Linux; Windows clean-machine installer test remains required. |
+| `python -m compileall -q app tests scripts` | PASS | All overlay Python modules compile. |
+| `python -m pytest -q` | PASS — 18 passed, 1 skipped | Includes CPU IFNet/RRDBNet shape tests, tile-edge test, aspect-ratio tests, no-op upscaler test, model download/checksum tests, frame scheduler tests and real FFmpeg CFR/audio integration. |
+| CUDA RIFE → Real-ESRGAN tensor-handoff test | SKIPPED | Requires a physical CUDA device; run on the RTX 4070 SUPER and RTX 4050. |
+| RIFE checkpoint strict load | NOT RUN | Checkpoint download and real model initialization require external network access. |
+| Real-ESRGAN checkpoint strict load | NOT RUN | Release asset download and real model initialization require external network access. |
+| CUDA FP16 inference / VRAM benchmark | NOT RUN | No NVIDIA GPU is attached to this container. |
+| NVENC hardware output | NOT RUN | No NVIDIA GPU is attached to this container. |
+| PySide6 UI patch/launch | NOT RUN | The container does not include the Windows Qt desktop runtime. |
+| Ruff | NOT RUN | Ruff is not installed in this container and package downloads are unavailable. Run `ruff check .` on Windows. |
 
-## Interpretation
+The FFmpeg integration test synthesizes a short CFR video with audio longer than the video stream, routes it through a deterministic fake frame pipeline, and verifies frame count, 60 FPS, output resolution and 48 kHz audio. It tests the media runner and synchronization contract, not neural inference.
 
-The passing tests validate the implemented Python core and conventional FFmpeg fallback only. They do not validate the future AI interpolation/upscaling pipeline, GUI runtime, CUDA, NVENC or Windows installer. Those remain release-blocking tests listed in `TEST_PLAN.md`.
+**Release gate:** do not call the AI pipeline hardware-validated until the CUDA benchmark passes on the RTX 4070 SUPER and RTX 4050, real checkpoint state dictionaries strict-load, the end-to-end UI job completes, and FFprobe/playback confirms expected output.

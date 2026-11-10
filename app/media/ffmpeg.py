@@ -22,8 +22,15 @@ class ToolStatus:
 
 
 def _run(args: list[str], timeout: float = 10.0) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(args, capture_output=True, text=True, encoding="utf-8",
-                          errors="replace", timeout=timeout, check=False)
+    return subprocess.run(
+        args,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=timeout,
+        check=False,
+    )
 
 
 def discover_ffmpeg() -> ToolStatus:
@@ -52,8 +59,10 @@ def probe_media(path: Path, ffprobe_path: str | None = None) -> dict[str, Any]:
         raise RuntimeError("FFprobe was not found. Install FFmpeg or configure its executable path.")
     if not path.exists() or not path.is_file():
         raise FileNotFoundError(path)
-    result = _run([executable, "-v", "error", "-show_format", "-show_streams",
-                   "-of", "json", str(path)], timeout=60.0)
+    result = _run(
+        [executable, "-v", "error", "-show_format", "-show_streams", "-of", "json", str(path)],
+        timeout=60.0,
+    )
     if result.returncode != 0:
         raise RuntimeError(result.stderr.strip() or "FFprobe failed.")
     try:
@@ -65,7 +74,7 @@ def probe_media(path: Path, ffprobe_path: str | None = None) -> dict[str, Any]:
 
 
 def parse_ffmpeg_progress(payload: dict[str, str], duration_seconds: float | None) -> float | None:
-    """Parse FFmpeg -progress output; out_time_us is measured in microseconds."""
+    """Parse FFmpeg -progress output; out_time_us is expressed in microseconds."""
     if not duration_seconds or duration_seconds <= 0:
         return None
     raw = payload.get("out_time_us") or payload.get("out_time_ms")
