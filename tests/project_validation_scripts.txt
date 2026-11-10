@@ -1,0 +1,5 @@
+python -m pytest -q
+python -m compileall -q app tests
+ruff check .
+
+python -m app -- launch app
