@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import shutil
-
 from PySide6.QtCore import QObject, Signal, Slot
 
 from app.core.config import ProcessingConfig
 from app.media.ai_video_runner import AIVideoRunner
+from app.media.ffmpeg import discover_ffmpeg
 from app.media.ffmpeg_runner import FFmpegRunner
 
 
@@ -22,9 +21,10 @@ class TranscodeWorker(QObject):
 
     @Slot()
     def run(self) -> None:
-        ffmpeg = shutil.which("ffmpeg")
+        tools = discover_ffmpeg()
+        ffmpeg = tools.ffmpeg
         if not ffmpeg:
-            self.failed.emit("FFmpeg was not found on PATH in this development build.")
+            self.failed.emit(tools.error or "FFmpeg was not found.")
             return
         try:
             self.runner = FFmpegRunner(ffmpeg)
@@ -75,3 +75,20 @@ class AIProcessingWorker(QObject):
     def cancel(self) -> None:
         if self.runner:
             self.runner.cancel()
+
+
+class RuntimeCheckWorker(QObject):
+    """Run the startup hardware/runtime diagnostics away from the GUI thread."""
+
+    finished = Signal(object)
+
+    @Slot()
+    def run(self) -> None:
+        from app.hardware.runtime_check import ERROR, RuntimeReport, run_runtime_checks
+
+        try:
+            report = run_runtime_checks(probe_nvenc=True)
+        except Exception as exc:  # noqa: BLE001 - Qt worker boundary must report unexpected errors
+            report = RuntimeReport()
+            report.add("Diagnostics", ERROR, f"Runtime check failed unexpectedly: {exc}")
+        self.finished.emit(report)

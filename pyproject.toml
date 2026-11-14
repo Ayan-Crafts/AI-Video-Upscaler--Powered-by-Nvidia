@@ -3,9 +3,9 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "nvidia-ai-video-studio"
-version = "0.2.0.dev1"
-description = "NVIDIA-accelerated AI video interpolation and upscaling desktop studio"
+name = "ai-upscaler-studio"
+version = "1.0.0"
+description = "AI Upscaler Studio - Powered by NVIDIA: AI video interpolation and upscaling desktop studio"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
 license = { text = "GPL-3.0-or-later" }
@@ -19,9 +19,10 @@ ai = ["numpy>=1.26,<3"]
 # in docs/AI_PIPELINE.md to avoid replacing CUDA PyTorch with a CPU wheel.
 ml = ["torch>=2.4", "torchvision>=0.19"]
 dev = ["pytest>=8", "pytest-qt>=4.4", "ruff>=0.6", "coverage>=7"]
+# Exact versions bundled into the V1 installers: packaging/requirements/runtime.txt
 
 [project.scripts]
-nvidia-ai-video-studio = "app.main:main"
+ai-upscaler-studio = "app.main:main"
 
 [tool.setuptools.packages.find]
 include = ["app*"]

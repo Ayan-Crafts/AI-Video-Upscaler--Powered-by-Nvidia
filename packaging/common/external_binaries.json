@@ -1,0 +1,38 @@
+{
+  "_comment": "Pinned third-party binaries downloaded by the build scripts. Every download is verified against sha256 before use. SHA-256 values are the digests GitHub publishes for these release assets.",
+  "ffmpeg_windows": {
+    "version": "9.0.2",
+    "provider": "gyan.dev (GyanD/codexffmpeg) essentials build",
+    "license": "GPL-3.0-or-later (built with --enable-gpl --enable-version3)",
+    "url": "https://github.com/GyanD/codexffmpeg/releases/download/9.0.2/ffmpeg-9.0.2-essentials_build.zip",
+    "sha256": "60f467265b1e312373dbcd92200c2618a74850f98d3d078e94296bb3fa2047ba",
+    "archive_subdir": "ffmpeg-9.0.2-essentials_build",
+    "source_url": "https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz",
+    "build_scripts_url": "https://www.gyan.dev/ffmpeg/builds/"
+  },
+  "ffmpeg_linux": {
+    "version": "n9.0.2-39-g7adfbe40dc",
+    "provider": "BtbN/FFmpeg-Builds linux64-gpl (month-end autobuild, retained long-term)",
+    "license": "GPL-3.0-or-later (built with --enable-gpl --enable-version3)",
+    "url": "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-31-12-59/ffmpeg-n9.0.2-39-g7adfbe40dc-linux64-gpl-9.0.tar.xz",
+    "sha256": "73e29a56974ae5a651133a04584c7483b21afe941e17dc91d79814a758b608d3",
+    "archive_subdir": "ffmpeg-n9.0.2-39-g7adfbe40dc-linux64-gpl-9.0",
+    "source_url": "https://github.com/FFmpeg/FFmpeg/tree/7adfbe40dc",
+    "build_scripts_url": "https://github.com/BtbN/FFmpeg-Builds"
+  },
+  "appimagetool": {
+    "version": "1.9.1",
+    "url": "https://github.com/AppImage/appimagetool/releases/download/1.9.1/appimagetool-x86_64.AppImage",
+    "sha256": "ed4ce84f0d9caff66f50bcca6ff6f35aae54ce8135408b3fa33abfc3cb384eb0"
+  },
+  "appimage_runtime": {
+    "version": "20251108",
+    "url": "https://github.com/AppImage/type2-runtime/releases/download/20251108/runtime-x86_64",
+    "sha256": "2fca8b443c92510f1483a883f60061ad09b46b978b2631c807cd873a47ec260d"
+  },
+  "uv_linux": {
+    "version": "0.11.28",
+    "url": "https://github.com/astral-sh/uv/releases/download/0.11.28/uv-x86_64-unknown-linux-gnu.tar.gz",
+    "sha256": "e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224"
+  }
+}

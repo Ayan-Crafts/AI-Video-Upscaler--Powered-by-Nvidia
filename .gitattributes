@@ -1,0 +1,10 @@
+# Linux packaging files must keep LF line endings even on Windows checkouts.
+*.sh text eol=lf
+*.desktop text eol=lf
+packaging/linux/appimage/AppRun text eol=lf
+packaging/linux/debian/* text eol=lf
+packaging/common/versions.env text eol=lf
+# Binary assets
+*.png binary
+*.ico binary
+*.zip binary

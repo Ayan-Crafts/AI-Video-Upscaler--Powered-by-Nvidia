@@ -1,0 +1,25 @@
+FFmpeg corresponding source information
+=======================================
+
+This distribution of AI Upscaler Studio includes unmodified ffmpeg and ffprobe
+executables. They were built by third parties with --enable-gpl and
+--enable-version3, so they are licensed under the GNU General Public License,
+version 3 or later. The exact build configuration is in BUILD_CONFIGURATION.json
+in this folder (and is printed by "ffmpeg -version").
+
+Windows build : FFmpeg 9.0.2 "essentials" build by gyan.dev
+  Binary      : https://github.com/GyanD/codexffmpeg/releases/tag/9.0.2
+  FFmpeg src  : https://ffmpeg.org/releases/ffmpeg-9.0.2.tar.xz
+  Build info  : https://www.gyan.dev/ffmpeg/builds/
+
+Linux build   : FFmpeg n9.0.2-39-g7adfbe40dc linux64-gpl build by BtbN
+  Binary      : https://github.com/BtbN/FFmpeg-Builds/releases/tag/autobuild-2026-10-31-12-59
+  FFmpeg src  : https://github.com/FFmpeg/FFmpeg/tree/7adfbe40dc
+  Build scripts and component versions: https://github.com/BtbN/FFmpeg-Builds
+
+Written offer: for at least three years after you received this distribution,
+the maintainer of AI Upscaler Studio will provide, on request through the
+project's GitHub repository (https://github.com/Ayan-Crafts/Nvidia-AI-Video-Upscaler/issues),
+a copy of the complete corresponding source code for the FFmpeg binaries
+included in this distribution, for no more than the cost of physically
+performing the source distribution.

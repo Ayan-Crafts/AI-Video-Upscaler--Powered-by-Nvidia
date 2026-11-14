@@ -7,6 +7,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from app.core.config import ProcessingConfig, validate_config
+from app.core.subprocess_utils import no_window_kwargs
 from app.engines.ffmpeg_command import build_ffmpeg_transcode_command
 from app.media.ffmpeg import parse_ffmpeg_progress
 
@@ -38,8 +39,8 @@ class FFmpegRunner:
         self._cancel_requested.clear()
         with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as stderr_log:
             self._process = subprocess.Popen(
-                command, stdout=subprocess.PIPE, stderr=stderr_log, text=True,
-                encoding="utf-8", errors="replace", bufsize=1,
+                command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=stderr_log,
+                text=True, encoding="utf-8", errors="replace", bufsize=1, **no_window_kwargs(),
             )
             assert self._process.stdout is not None
             record: dict[str, str] = {}

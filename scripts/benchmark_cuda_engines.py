@@ -14,7 +14,7 @@ from app.engines.rife import RIFEEngine
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Download and benchmark NVIDIA AI Video Studio RIFE and Real-ESRGAN CUDA engines."
+        description="Download and benchmark AI Upscaler Studio RIFE and Real-ESRGAN CUDA engines."
     )
     parser.add_argument("--device", type=int, default=0, help="PyTorch CUDA device index (default: 0)")
     parser.add_argument("--width", type=int, default=640, help="Synthetic test-frame width")

@@ -8,6 +8,8 @@ import subprocess
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from app.core.subprocess_utils import run_tool
+
 logger = logging.getLogger(__name__)
 
 
@@ -151,7 +153,7 @@ def _detect_with_nvidia_smi() -> list[GPUInfo]:
         ]
 
     try:
-        result = subprocess.run(
+        result = run_tool(
             [
                 executable,
                 (
@@ -161,12 +163,7 @@ def _detect_with_nvidia_smi() -> list[GPUInfo]:
                 ),
                 "--format=csv,noheader,nounits",
             ],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
             timeout=8,
-            check=False,
         )
 
         if result.returncode != 0:

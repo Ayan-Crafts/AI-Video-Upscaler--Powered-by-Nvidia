@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=AI Upscaler Studio
+GenericName=AI Video Upscaler
+Comment=AI video upscaling and frame interpolation - Powered by NVIDIA
+Exec=ai-upscaler-studio
+Icon=ai-upscaler-studio
+Terminal=false
+Categories=AudioVideo;Video;
+Keywords=upscale;upscaling;interpolation;super-resolution;video;AI;NVIDIA;CUDA;
+StartupWMClass=ai-upscaler-studio
+StartupNotify=true

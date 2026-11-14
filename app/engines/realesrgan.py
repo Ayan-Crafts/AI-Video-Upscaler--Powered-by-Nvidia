@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
+from app.engines.cuda_utils import release_cuda_cache
 from app.engines.model_manager import ModelManager, ProgressCallback
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,10 @@ REALESRGAN_MODELS = {
             "v0.2.1/RealESRGAN_x2plus.pth"
         ),
         "min_bytes": 67_061_725,
+        # Upstream does not publish checksums. This digest was pinned by the
+        # maintainer from the official release asset and matches widely
+        # published community records for RealESRGAN_x2plus.pth.
+        "sha256": "49fafd45f8fd7aa8d31ab2a22d14d91b536c34494a5cfe31eb5d89c2fa266abb",
     },
     4: {
         "name": "RealESRGAN_x4plus",
@@ -25,6 +30,7 @@ REALESRGAN_MODELS = {
             "v0.1.0/RealESRGAN_x4plus.pth"
         ),
         "min_bytes": 67_040_989,
+        "sha256": "4fa0d38905f75ac06eb49a7951b426670021be3018265fd191d2125df9d682f1",
     },
 }
 
@@ -81,6 +87,8 @@ class RealESRGANEngine:
             relative_path=f"realesrgan/{self.model_name}.pth",
             url=str(model_info["url"]),
             min_bytes=int(model_info["min_bytes"]),
+            expected_bytes=int(model_info["min_bytes"]),
+            expected_sha256=str(model_info["sha256"]),
             progress=progress,
         )
         self.model = self._load_model()
@@ -223,8 +231,7 @@ class RealESRGANEngine:
                 last_error = exc
                 tile_size //= 2
                 logger.warning("Real-ESRGAN CUDA OOM; retrying with tile size %s.", tile_size)
-                with self.torch.cuda.device(self.device):
-                    self.torch.cuda.empty_cache()
+                release_cuda_cache(self.torch, self.device)
         raise RealESRGANError(
             "Real-ESRGAN ran out of GPU memory even with 32-pixel tiles. "
             "Close other GPU applications or lower source resolution."
@@ -306,5 +313,4 @@ class RealESRGANEngine:
     def close(self) -> None:
         if getattr(self, "model", None) is not None:
             del self.model
-        with self.torch.cuda.device(self.device):
-            self.torch.cuda.empty_cache()
+        release_cuda_cache(self.torch, self.device)

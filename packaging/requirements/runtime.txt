@@ -1,0 +1,21 @@
+# Pinned runtime dependencies bundled into AI Upscaler Studio v1.0.0.
+# These versions match the V1 development environment. Do not upgrade while
+# packaging V1. The CUDA 12.6 PyTorch build comes from the official PyTorch
+# wheel index; a CPU-only wheel is rejected by packaging/scripts/verify_cuda_runtime.py.
+--extra-index-url https://download.pytorch.org/whl/cu126
+torch==2.14.1+cu126
+numpy==2.5.4
+PySide6-Essentials==6.12.0
+shiboken6==6.12.0
+psutil==7.2.2
+nvidia-ml-py==13.615.71
+# PyTorch's own Python dependencies, pinned to the development environment.
+filelock==4.2.10
+fsspec==2026.9.0
+Jinja2==3.1.6
+MarkupSafe==3.0.4
+mpmath==1.3.0
+networkx==3.7
+sympy==1.14.0
+typing_extensions==4.16.0
+setuptools==84.2.1

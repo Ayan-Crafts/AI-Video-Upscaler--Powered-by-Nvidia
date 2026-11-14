@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 
+from app.engines.cuda_utils import release_cuda_cache
 from app.engines.model_manager import ModelManager, ProgressCallback
 
 logger = logging.getLogger(__name__)
@@ -66,6 +67,7 @@ class RIFEEngine:
             relative_path="rife/v4.25/flownet.pkl",
             url=RIFE_MODEL_URL,
             min_bytes=24_636_301,
+            expected_bytes=24_636_301,
             expected_sha256=(
                 "6615790efd627772917205db291f51cd392528a157ecbb2ecaeec3bff8eb6de2"
             ),
@@ -186,8 +188,7 @@ class RIFEEngine:
                 last_error = exc
                 logger.warning("RIFE CUDA out of memory at inference scale %s; retrying smaller.", scale)
                 del input0, input1
-                with torch.cuda.device(self.device):
-                    torch.cuda.empty_cache()
+                release_cuda_cache(torch, self.device)
                 scale *= 0.5
 
         raise RIFEError(
@@ -218,6 +219,6 @@ class RIFEEngine:
         )
 
     def close(self) -> None:
-        del self.model
-        with self.torch.cuda.device(self.device):
-            self.torch.cuda.empty_cache()
+        if getattr(self, "model", None) is not None:
+            del self.model
+        release_cuda_cache(self.torch, self.device)

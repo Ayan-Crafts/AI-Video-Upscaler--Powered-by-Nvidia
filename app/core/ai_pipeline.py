@@ -135,7 +135,7 @@ class AIFramePipeline:
             resized = frame
         else:
             if not torch.cuda.is_available():
-                raise RuntimeError("CUDA is required for NVIDIA AI Video Studio frame processing.")
+                raise RuntimeError("CUDA is required for AI Upscaler Studio frame processing.")
             if device_index < 0 or device_index >= torch.cuda.device_count():
                 raise RuntimeError(f"CUDA device index {device_index} is unavailable.")
             device = torch.device(f"cuda:{device_index}")

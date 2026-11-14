@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import QThread, QTimer
+from PySide6.QtCore import Qt, QThread, QTimer
 from PySide6.QtWidgets import (
     QComboBox,
     QDoubleSpinBox,
@@ -28,13 +28,23 @@ from app.engines.availability import realesrgan_status, rife_status, torch_cuda_
 from app.hardware.gpu import detect_gpus
 from app.hardware.system import system_metrics
 from app.media.ffmpeg import discover_ffmpeg, probe_media
+from app.paths import log_dir, model_dir
 from app.ui.theme import DARK_QSS
+from app.version import (
+    APP_AUTHOR,
+    APP_HOMEPAGE,
+    APP_NAME,
+    APP_TAGLINE,
+    NVIDIA_DRIVER_URL,
+    WINDOW_TITLE,
+    display_version,
+)
 
 
 class MainWindow(QMainWindow):
-    def __init__(self) -> None:
+    def __init__(self, run_startup_checks: bool = True) -> None:
         super().__init__()
-        self.setWindowTitle("NVIDIA AI Video Studio")
+        self.setWindowTitle(WINDOW_TITLE)
         self.resize(1280, 820)
         self.setMinimumSize(1020, 700)
         self.source_path: Path | None = None
@@ -47,6 +57,10 @@ class MainWindow(QMainWindow):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self._refresh_status)
         self.timer.start(2500)
+        self._check_thread: QThread | None = None
+        self._check_worker = None
+        if run_startup_checks:
+            QTimer.singleShot(0, self._start_runtime_check)
 
     def _panel(self, title: str) -> tuple[QFrame, QVBoxLayout]:
         panel = QFrame()
@@ -65,9 +79,12 @@ class MainWindow(QMainWindow):
         sidebar = QFrame()
         sidebar.setObjectName("Sidebar")
         side = QVBoxLayout(sidebar)
-        brand = QLabel("▰  NVIDIA AI\n     VIDEO STUDIO")
+        brand = QLabel("▰  AI UPSCALER\n     STUDIO")
         brand.setStyleSheet("font-size: 15pt; font-weight: 800; color: #A8E34E; padding: 10px;")
         side.addWidget(brand)
+        tagline = QLabel(f"{APP_TAGLINE}\n{display_version()}")
+        tagline.setStyleSheet("color: #9AA4AD; padding: 0 10px 8px 10px;")
+        side.addWidget(tagline)
         self.nav = QListWidget()
         self.nav.addItems(["Dashboard", "Process Video", "Queue", "Settings"])
         self.nav.setFixedWidth(205)
@@ -82,7 +99,7 @@ class MainWindow(QMainWindow):
         self.pages.addWidget(self._dashboard_page())
         self.pages.addWidget(self._process_page())
         self.pages.addWidget(self._simple_page("Processing queue", "Persistent multi-job queue is not yet implemented."))
-        self.pages.addWidget(self._simple_page("Settings", "Runtime diagnostics, model manager and cache settings are under development."))
+        self.pages.addWidget(self._settings_page())
         outer.addWidget(self.pages, 1)
         self.nav.currentRowChanged.connect(self.pages.setCurrentIndex)
         self.nav.setCurrentRow(0)
@@ -226,6 +243,122 @@ class MainWindow(QMainWindow):
         layout.addWidget(label)
         layout.addStretch()
         return page
+
+    def _settings_page(self) -> QWidget:
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        title = QLabel("Settings")
+        title.setObjectName("Title")
+        layout.addWidget(title)
+        sub = QLabel("Runtime diagnostics and storage locations")
+        sub.setObjectName("Subtitle")
+        layout.addWidget(sub)
+        panel, box = self._panel("Environment and hardware check")
+        self.diagnostics = QLabel("Running startup checks…")
+        self.diagnostics.setWordWrap(True)
+        self.diagnostics.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        box.addWidget(self.diagnostics)
+        recheck = QPushButton("Run checks again")
+        recheck.clicked.connect(self._start_runtime_check)
+        box.addWidget(recheck)
+        layout.addWidget(panel)
+        panel, box = self._panel("Storage")
+        storage = QLabel(
+            f"Model cache: {model_dir()}\nLogs: {log_dir()}\n"
+            "Model checkpoints download automatically on first use and are reused afterwards."
+        )
+        storage.setWordWrap(True)
+        storage.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        box.addWidget(storage)
+        layout.addWidget(panel)
+        panel, box = self._panel("About")
+        about = QLabel(
+            f"{APP_NAME} — {APP_TAGLINE}<br>{display_version()}<br>"
+            f"Created and developed by {APP_AUTHOR}<br>"
+            f'<a href="{APP_HOMEPAGE}">{APP_HOMEPAGE}</a><br>'
+            "Independent project; not affiliated with or endorsed by NVIDIA Corporation."
+        )
+        about.setTextFormat(Qt.TextFormat.RichText)
+        about.setOpenExternalLinks(True)
+        about.setWordWrap(True)
+        box.addWidget(about)
+        layout.addWidget(panel)
+        layout.addStretch()
+        return page
+
+    def _start_runtime_check(self) -> None:
+        if self._check_thread is not None:
+            return
+        from app.ui.workers import RuntimeCheckWorker
+
+        self.diagnostics.setText("Running startup checks…")
+        self._check_thread = QThread(self)
+        self._check_worker = RuntimeCheckWorker()
+        self._check_worker.moveToThread(self._check_thread)
+        self._check_thread.started.connect(self._check_worker.run)
+        self._check_worker.finished.connect(self._on_runtime_check)
+        self._check_worker.finished.connect(self._check_thread.quit)
+        self._check_thread.finished.connect(self._on_check_thread_finished)
+        self._check_thread.start()
+
+    def closeEvent(self, event) -> None:
+        if self._worker_thread is not None and self._worker_thread.isRunning():
+            answer = QMessageBox.question(
+                self, "Processing in progress",
+                "A video is still being processed. Cancel the job and quit?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if answer != QMessageBox.StandardButton.Yes:
+                event.ignore()
+                return
+        self.shutdown()
+        super().closeEvent(event)
+
+    def shutdown(self) -> None:
+        """Stop timers and join worker threads before Qt and CUDA are torn down.
+
+        Destroying a running QThread aborts the process, so every background
+        thread is cancelled and joined here.
+        """
+        self.timer.stop()
+        worker, worker_thread = self._worker, self._worker_thread
+        if worker_thread is not None and worker_thread.isRunning():
+            if worker is not None and hasattr(worker, "cancel"):
+                worker.cancel()  # terminates FFmpeg; the runner then raises and returns
+            worker_thread.quit()
+            worker_thread.wait(30_000)
+        check_thread = self._check_thread
+        if check_thread is not None and check_thread.isRunning():
+            check_thread.quit()
+            check_thread.wait(5_000)
+
+    def _on_check_thread_finished(self) -> None:
+        self._check_worker = None
+        self._check_thread = None
+
+    def _on_runtime_check(self, report) -> None:
+        from app.hardware.runtime_check import ERROR
+
+        self.diagnostics.setText(report.as_text())
+        self._refresh_status()
+        if report.level == ERROR and not getattr(self, "_runtime_warning_shown", False):
+            self._runtime_warning_shown = True
+            problems = "".join(
+                f"<li>{item.name}: {item.detail}</li>" for item in report.problems() if item.status == ERROR
+            )
+            box = QMessageBox(self)
+            box.setIcon(QMessageBox.Icon.Warning)
+            box.setWindowTitle("AI processing is not available yet")
+            box.setTextFormat(Qt.TextFormat.RichText)
+            box.setText(
+                "<p>AI Upscaler Studio needs a compatible NVIDIA GPU and NVIDIA display driver for "
+                f"AI processing.</p><ul>{problems}</ul>"
+                f'<p>Download the latest driver from NVIDIA: <a href="{NVIDIA_DRIVER_URL}">'
+                f"{NVIDIA_DRIVER_URL}</a></p><p>The standard FFmpeg export remains available. "
+                "Details are on the Settings page.</p>"
+            )
+            box.open()
 
     def _set_codecs(self) -> None:
         mapping = {

@@ -1,0 +1,40 @@
+# Manually triggered: builds Windows and Ubuntu artifacts and assembles a
+# release-candidate bundle with SHA256SUMS.txt and BUILD_MANIFEST.json.
+# It deliberately does NOT create a tag or publish a GitHub Release; publishing
+# is a separate, manual step after hardware validation.
+name: Release candidate builds
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    uses: ./.github/workflows/build-windows.yml
+  ubuntu:
+    uses: ./.github/workflows/build-ubuntu.yml
+
+  assemble:
+    needs: [windows, ubuntu]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: ai-upscaler-studio-*
+          path: dist/release
+          merge-multiple: true
+      - name: Combined manifest and checksums
+        run: |
+          python3 packaging/scripts/write_manifest.py --merge dist/release/BUILD_MANIFEST-*.json \
+            --output dist/release/BUILD_MANIFEST.json
+          python3 packaging/scripts/generate_checksums.py dist/release
+          cat dist/release/SHA256SUMS.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ai-upscaler-studio-v1.0.0-release-candidate
+          path: dist/release/
+          compression-level: 0
+          retention-days: 30

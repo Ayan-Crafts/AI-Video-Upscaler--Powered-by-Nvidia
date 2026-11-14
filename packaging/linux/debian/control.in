@@ -1,0 +1,19 @@
+Package: ai-upscaler-studio
+Version: @VERSION@
+Section: video
+Priority: optional
+Architecture: amd64
+Maintainer: Sanjay Kumar S <https://github.com/Sanjay1712KSK>
+Installed-Size: @INSTALLED_SIZE@
+Depends: libc6 (>= 2.35), libgl1, libegl1, libxkbcommon0, libxkbcommon-x11-0, libfontconfig1, libfreetype6, libdbus-1-3, libglib2.0-0t64 | libglib2.0-0, libgtk-3-0t64 | libgtk-3-0, libx11-6, libx11-xcb1, libxcb1, libxcb-cursor0, libxcb-icccm4, libxcb-image0, libxcb-keysyms1, libxcb-randr0, libxcb-render-util0, libxcb-shape0, libxcb-xinerama0, libxcb-xkb1
+Homepage: https://github.com/Ayan-Crafts/Nvidia-AI-Video-Upscaler
+Description: AI video upscaling and frame interpolation - Powered by NVIDIA
+ AI Upscaler Studio @VERSION@ (Imaginoromancophilia) combines Practical-RIFE v4.25
+ frame interpolation and Real-ESRGAN x2plus/x4plus super-resolution with CUDA
+ inference and FFmpeg encoding (including NVENC) in a desktop application.
+ .
+ Python, PyTorch with the CUDA 12.6 runtime, Qt (PySide6), FFmpeg and FFprobe are
+ bundled. A supported NVIDIA GPU with the proprietary NVIDIA driver (560 series
+ or newer recommended) is required for AI processing; this package does not
+ install or modify NVIDIA drivers. AI model weights are downloaded on first use
+ into ~/.cache/ai-upscaler-studio/models.

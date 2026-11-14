@@ -10,7 +10,8 @@ def build_ffmpeg_transcode_command(ffmpeg: str, config: ProcessingConfig) -> lis
         f"scale={config.output_width}:{config.output_height}:flags=lanczos:force_original_aspect_ratio=decrease"
     )
     filters.append(f"pad={config.output_width}:{config.output_height}:(ow-iw)/2:(oh-ih)/2")
-    args = [ffmpeg, "-hide_banner", "-y" if config.overwrite else "-n", "-i", str(config.input_path),
+    args = [ffmpeg, "-hide_banner", "-nostdin", "-y" if config.overwrite else "-n",
+            "-i", str(config.input_path),
             "-vf", ",".join(filters)]
     if config.video_codec.endswith("_nvenc"):
         args.extend(["-c:v", config.video_codec, "-preset", "p6", "-tune", "hq",

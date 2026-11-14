@@ -1,0 +1,24 @@
+AI Upscaler Studio - Powered by NVIDIA
+Version 1.0.0 (Imaginoromancophilia)
+Created and developed by Sanjay Kumar S.
+
+AI Upscaler Studio is free software: you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version (GPL-3.0-or-later).
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+The full text of the GNU General Public License version 3 is included in
+licenses/ffmpeg/ (FFmpeg's LICENSE file) and at https://www.gnu.org/licenses/gpl-3.0.txt
+
+Source code: https://github.com/Ayan-Crafts/Nvidia-AI-Video-Upscaler
+
+Third-party components keep their own licences; see THIRD_PARTY_NOTICES.md and
+the sub-directories of this folder.
+
+AI Upscaler Studio is an independent project. It is not affiliated with,
+endorsed by or sponsored by NVIDIA Corporation. NVIDIA, GeForce, CUDA and NVENC
+are trademarks or registered trademarks of NVIDIA Corporation.

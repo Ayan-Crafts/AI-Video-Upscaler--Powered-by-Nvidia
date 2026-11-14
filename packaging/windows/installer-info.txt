@@ -1,0 +1,41 @@
+AI Upscaler Studio - Powered by NVIDIA
+Version 1.0.0 (Imaginoromancophilia)
+
+BEFORE YOU INSTALL
+
+1. NVIDIA GPU and driver required
+   AI processing runs on an NVIDIA GPU through CUDA. You need:
+     - A supported NVIDIA GeForce/RTX/Quadro GPU (Maxwell through Hopper /
+       Ada Lovelace architectures; see docs/HARDWARE_COMPATIBILITY.md).
+       RTX 50-series (Blackwell) GPUs are NOT supported by this release.
+     - A current NVIDIA display driver (version 560.76 or newer recommended;
+       527.41 is the absolute minimum).
+   The installer does not install or change your NVIDIA driver. Download
+   drivers only from NVIDIA: https://www.nvidia.com/en-us/drivers/
+
+2. Everything else is included
+   Python, PyTorch with the CUDA 12.6 runtime, Qt (PySide6), NumPy,
+   FFmpeg and FFprobe are bundled. You do not need to install Python, pip,
+   the CUDA Toolkit or FFmpeg.
+
+3. First-run model downloads (internet required once)
+   The AI model weights are not included in the installer. The first time
+   you use AI interpolation or upscaling, the application downloads:
+     - Practical-RIFE v4.25 (about 25 MB)
+     - Real-ESRGAN x2plus and/or x4plus (about 67 MB each)
+   Downloads are checked against pinned SHA-256 checksums and cached in
+   %LOCALAPPDATA%\AI Upscaler Studio\models so they are downloaded only once.
+
+4. Disk space
+   About 5 GB for the application, plus space for models and your videos.
+
+5. Unsigned installer
+   This installer is not digitally signed. Windows SmartScreen may show a
+   warning. Verify the download with the published SHA256SUMS.txt.
+
+6. V1 limitations
+   V1 requires constant-frame-rate (CFR) input, produces 8-bit SDR output
+   and is slow (minutes per second of video). See the README.
+
+AI Upscaler Studio is free software under the GPL-3.0-or-later licence and is
+not affiliated with or endorsed by NVIDIA Corporation.

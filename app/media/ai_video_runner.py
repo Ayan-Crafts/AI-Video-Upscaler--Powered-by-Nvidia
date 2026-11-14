@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import shutil
+import logging
 import subprocess
 import tempfile
 import threading
@@ -11,7 +11,10 @@ from pathlib import Path
 from app.core.ai_pipeline import AIFramePipeline
 from app.core.config import ProcessingConfig, validate_config
 from app.core.frame_schedule import as_rate
+from app.core.subprocess_utils import no_window_kwargs
 from app.media.ffmpeg import discover_ffmpeg, probe_media
+
+logger = logging.getLogger(__name__)
 
 
 class AIVideoExecutionError(RuntimeError):
@@ -65,7 +68,7 @@ class AIVideoRunner:
     """
 
     def __init__(self, ffmpeg_path: str | None = None) -> None:
-        self.ffmpeg_path = ffmpeg_path or shutil.which("ffmpeg")
+        self.ffmpeg_path = ffmpeg_path or discover_ffmpeg().ffmpeg
         self._cancel = threading.Event()
         self._decoder: subprocess.Popen[bytes] | None = None
         self._encoder: subprocess.Popen[bytes] | None = None
@@ -85,7 +88,7 @@ class AIVideoRunner:
         partial_path: Path,
     ) -> list[str]:
         if not self.ffmpeg_path:
-            raise AIVideoExecutionError("FFmpeg was not found. Install FFmpeg or bundle it with the app.")
+            raise AIVideoExecutionError("FFmpeg was not found. Reinstall AI Upscaler Studio or configure FFmpeg.")
         args = [
             self.ffmpeg_path,
             "-hide_banner",
@@ -139,7 +142,9 @@ class AIVideoRunner:
         if errors:
             raise AIVideoExecutionError("Invalid job configuration: " + "; ".join(errors))
         if not self.ffmpeg_path:
-            raise AIVideoExecutionError("FFmpeg was not found on PATH in this development build.")
+            raise AIVideoExecutionError(
+                discover_ffmpeg().error or "FFmpeg was not found. Reinstall AI Upscaler Studio."
+            )
         tools = discover_ffmpeg()
         if not tools.available:
             raise AIVideoExecutionError(tools.error or "FFmpeg/FFprobe are unavailable.")
@@ -149,7 +154,7 @@ class AIVideoRunner:
                 "Choose a supported NVENC codec or a software encoder."
             )
 
-        metadata = probe_media(config.input_path)
+        metadata = probe_media(config.input_path, tools.ffprobe)
         video = next(
             (stream for stream in metadata.get("streams", []) if stream.get("codec_type") == "video"),
             None,
@@ -200,7 +205,7 @@ class AIVideoRunner:
 
         decoder_command = [
             self.ffmpeg_path, "-hide_banner", "-loglevel", "error",
-            "-i", str(config.input_path), "-map", "0:v:0", "-an", "-sn", "-dn",
+            "-nostdin", "-i", str(config.input_path), "-map", "0:v:0", "-an", "-sn", "-dn",
             "-fps_mode", "passthrough", "-pix_fmt", "rgb24", "-f", "rawvideo", "pipe:1",
         ]
 
@@ -256,12 +261,15 @@ class AIVideoRunner:
                     stdout=subprocess.DEVNULL,
                     stderr=encoder_log,
                     bufsize=0,
+                    **no_window_kwargs(),
                 )
                 self._decoder = subprocess.Popen(
                     decoder_command,
+                    stdin=subprocess.DEVNULL,
                     stdout=subprocess.PIPE,
                     stderr=decoder_log,
                     bufsize=0,
+                    **no_window_kwargs(),
                 )
                 if self._decoder.stdout is None or self._encoder.stdin is None:
                     raise AIVideoExecutionError("Could not initialize FFmpeg raw-frame pipes.")
@@ -342,7 +350,7 @@ class AIVideoRunner:
                 if not partial_path.is_file() or partial_path.stat().st_size == 0:
                     raise AIVideoExecutionError("FFmpeg did not produce a non-empty output file.")
 
-                output_metadata = probe_media(partial_path)
+                output_metadata = probe_media(partial_path, tools.ffprobe)
                 out_video = next(
                     (stream for stream in output_metadata.get("streams", []) if stream.get("codec_type") == "video"),
                     None,
@@ -400,19 +408,33 @@ class AIVideoRunner:
                 on_progress(100.0, "AI processing complete · output verified")
                 return config.output_path
             except Exception:
-                partial_path.unlink(missing_ok=True)
-                for process in (self._decoder, self._encoder):
-                    if process is not None and process.poll() is None:
-                        process.kill()
+                # Stop FFmpeg before deleting its output: on Windows the encoder
+                # still holds the partial file open, and a PermissionError here
+                # would hide the real error from the user.
+                self._stop_processes()
+                try:
+                    partial_path.unlink(missing_ok=True)
+                except OSError as cleanup_error:
+                    logger.warning("Could not remove partial output %s: %s", partial_path, cleanup_error)
                 raise
             finally:
-                for process in (self._decoder, self._encoder):
-                    if process is not None and process.poll() is None:
-                        process.kill()
+                self._stop_processes()
                 self._decoder = None
                 self._encoder = None
                 if pipeline is not None:
-                    pipeline.close()
+                    try:
+                        pipeline.close()
+                    except Exception as cleanup_error:  # noqa: BLE001 - never mask the job result
+                        logger.warning("CUDA pipeline cleanup failed: %s", cleanup_error)
+
+    def _stop_processes(self) -> None:
+        for process in (self._decoder, self._encoder):
+            if process is not None and process.poll() is None:
+                process.kill()
+                try:
+                    process.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    logger.warning("FFmpeg process %s did not exit after kill.", process.pid)
 
 
 def np_from_rgb_bytes(raw: bytes, width: int, height: int):

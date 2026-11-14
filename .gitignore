@@ -17,3 +17,12 @@ output/
 *.log
 .mp4
 v1_Screenshots/*.mp4
+
+# Packaging outputs and caches (never commit installers or bundles)
+dist/
+build/
+dist-installer/
+*.AppImage
+*.deb
+*.part
+packaging/**/__pycache__/

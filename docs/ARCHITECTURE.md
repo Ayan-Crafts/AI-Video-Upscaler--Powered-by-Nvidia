@@ -12,7 +12,7 @@ Never select a runtime from a marketing GPU name alone. Inspect driver version, 
 
 ## Installer
 
-The intended installer bundles the app runtime, PySide6, compatible PyTorch CUDA runtime, FFmpeg/FFprobe and redistributable dependencies. The NVIDIA display driver remains an external prerequisite. The app must detect a missing/incompatible driver and guide users to NVIDIA's official installer. It must not silently install or replace display drivers.
+V1.0.0 ships PyInstaller one-directory bundles wrapped as a Windows Inno Setup installer, a portable ZIP, an Ubuntu AppImage and a `.deb` (see [BUILD_AND_DISTRIBUTION.md](BUILD_AND_DISTRIBUTION.md)). They bundle the app runtime, PySide6, the CUDA 12.6 PyTorch runtime, FFmpeg/FFprobe and redistributable dependencies. The NVIDIA display driver remains an external prerequisite: `app/hardware/runtime_check.py` detects a missing or incompatible driver, unsupported GPU architectures, VRAM and working NVENC encoders, and guides users to NVIDIA's official driver page. Nothing installs or replaces display drivers. `app/paths.py` keeps all writable data (models, logs, config) in per-user directories, never in the read-only install/AppImage location.
 
 ## Memory and timestamps
 

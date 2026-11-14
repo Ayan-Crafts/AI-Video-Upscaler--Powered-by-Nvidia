@@ -1,0 +1,70 @@
+# Builds the Ubuntu AppImage and .deb on a native Ubuntu 22.04 runner (glibc 2.35
+# baseline) and tests them in fresh ubuntu:22.04 and ubuntu:24.04 containers.
+# GitHub runners have no NVIDIA GPU: the CUDA inference path is NOT exercised here.
+# Artifacts only; this workflow never creates tags or releases.
+name: Build Ubuntu packages
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths: ["app/**", "packaging/**", "tests/**", ".github/workflows/build-ubuntu.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Free runner disk space (CUDA PyTorch bundle is ~5 GB)
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force > /dev/null
+          df -h /
+      - name: Build AppImage and .deb
+        env:
+          AUS_GIT_COMMIT: ${{ github.sha }}
+          AUS_GIT_BRANCH: ${{ github.ref_name }}
+          AUS_GIT_DIRTY: "0"
+        run: bash packaging/linux/build.sh --install-deps
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ai-upscaler-studio-ubuntu-x86_64
+          path: |
+            dist/release/*Ubuntu*
+            dist/release/BUILD_MANIFEST-ubuntu-x86_64.json
+          compression-level: 0
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ubuntu-build-reports
+          path: build/linux/*.json
+          retention-days: 14
+
+  package-tests:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["ubuntu:22.04", "ubuntu:24.04"]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: ai-upscaler-studio-ubuntu-x86_64
+          path: dist/release
+      - name: Test .deb and AppImage in a fresh ${{ matrix.image }} container
+        run: |
+          chmod +x dist/release/*.AppImage
+          mkdir -p results
+          docker run --rm -v "$PWD:/src:ro" -v "$PWD/results:/results" "${{ matrix.image }}" \
+            bash /src/packaging/linux/test-packages.sh /results/package-tests.json
+      - if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: package-tests-${{ strategy.job-index }}
+          path: results/
